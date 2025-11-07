@@ -73,6 +73,11 @@
 
     /* Reduced motion */
     @media (prefers-reduced-motion:reduce){ .porcelain::before{animation:none} .title span{animation:none; opacity:1; transform:none} }
+      /* ======= Page blur-in reveal ======= */
+    .page{filter: blur(16px); opacity:0; transform: translateY(6px); transition: filter .7s cubic-bezier(.2,.7,.2,1), opacity .6s ease, transform .6s ease}
+    .page.ready{filter: blur(0); opacity:1; transform: translateY(0)}
+
+    @media (prefers-reduced-motion:reduce){ .page{filter:none; opacity:1; transform:none; transition:none} }
   </style>
 </head>
 <body>
