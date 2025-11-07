@@ -6,48 +6,16 @@
   <title>M&E Websites — Monochrome Studio</title>
   <meta name="description" content="Black & white. Fewer words. Obscene polish. M&E Websites." />
   <style>
-    :root{ --bg:#000; --fg:#fff; --muted:#bfbfbf; --line:#1a1a1a; --radius:22px }
+    :root{ --bg:#000; --fg:#fff; --muted:#bfbfbf; --radius:22px; --vignette:rgba(255,255,255,.05); --grain:.08 }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0; background:var(--bg); color:var(--fg); font:600 16px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; overflow-x:hidden}
     a{color:inherit; text-decoration:none}
 
-    /* ======= Background Textures (no squares) ======= */
-    .canvas{position:fixed; inset:0; z-index:-2; pointer-events:none}
-
-    /* Layer A — flowing silk waves (no grid) */
-    .layer.waves{position:absolute; inset:-12vmax; background:
-      repeating-linear-gradient(100deg, rgba(255,255,255,.025) 0 2px, transparent 2px 42px),
-      repeating-linear-gradient(-80deg, rgba(255,255,255,.02) 0 1px, transparent 1px 36px);
-      filter: contrast(106%);
-      animation: wavesShift 36s linear infinite;
-    }
-    @keyframes wavesShift{ to{ background-position: 800px 0, -600px 0 } }
-
-    /* Layer B — soft marbled ink made from blurred conic/radial gradients */
-    .layer.ink{position:absolute; inset:-20vmax; background:
-      radial-gradient(1200px 600px at 10% 30%, rgba(255,255,255,.05), transparent 60%),
-      radial-gradient(900px 700px at 80% 40%, rgba(255,255,255,.035), transparent 65%),
-      radial-gradient(700px 500px at 40% 80%, rgba(255,255,255,.045), transparent 60%),
-      conic-gradient(from 0deg at 60% 50%, rgba(255,255,255,.06), transparent 30%, rgba(255,255,255,.03) 55%, transparent 85%);
-      filter: blur(10px) contrast(105%);
-      animation: inkDrift 80s ease-in-out infinite;
-    }
-    @keyframes inkDrift{ 50%{ transform: rotate(2deg) scale(1.03) translateY(-1.2%) } }
-
-    /* Layer C — faint rings for depth */
-    .layer.rings{position:absolute; inset:-22vmax; background:
-      radial-gradient(60vmax 60vmax at 70% 40%, rgba(255,255,255,0.05), transparent 40%),
-      radial-gradient(40vmax 40vmax at 10% 70%, rgba(255,255,255,0.04), transparent 55%),
-      radial-gradient(50vmax 60vmax at 90% 80%, rgba(255,255,255,0.03), transparent 60%);
-      filter: blur(8px);
-      animation: ringsSpin 120s linear infinite;
-    }
-    @keyframes ringsSpin{ to{ transform: rotate(1turn)} }
-
-    /* animated film grain for bite */
-    .grain{position:absolute; inset:-1px; mix-blend-mode:soft-light; opacity:.22; animation: grainShift 1.6s steps(4) infinite }
-    @keyframes grainShift{ 50%{ transform: translate3d(1px,-1px,0)} to{ transform: translate3d(0,0,0)} }
+    /* ======= Background: Pure velvet (no lines, no lights) ======= */
+    .backdrop{position:fixed; inset:0; z-index:-2; pointer-events:none;}
+    .velvet{position:absolute; inset:0; background: radial-gradient(1200px 700px at 50% 42%, var(--vignette), transparent 55%); filter: blur(18px); opacity:.22}
+    .grain{position:absolute; inset:-1px; mix-blend-mode:soft-light; opacity:var(--grain)}
     .grain svg{width:100%; height:100%; display:block}
 
     /* ======= Header ======= */
@@ -60,24 +28,26 @@
     /* ======= Hero ======= */
     .hero{min-height:100svh; display:grid; place-items:center; padding:120px 20px 80px; text-align:center}
 
-    /* stacked 3D wordmark */
-    .title{margin:8px 0 0; font-weight:1000; line-height:.85; letter-spacing:-.02em; font-size:clamp(56px,12vw,180px); position:relative; display:inline-block}
-    .title span{position:relative; display:inline-block; text-shadow:
-        0 1px 0 rgba(255,255,255,.5),
-        0 2px 0 rgba(255,255,255,.35),
-        0 3px 0 rgba(255,255,255,.18),
-        0 8px 22px rgba(0,0,0,.7)}
-    .title .amp{animation: breathe 6s ease-in-out infinite}
-    @keyframes breathe{ 50%{ transform: translateY(-4px) scale(1.02) } }
+    /* Extravagant, not noisy: 3D wordmark with subtle entrance */
+    .title{margin:8px 0 0; font-weight:1000; line-height:.82; letter-spacing:-.02em; font-size:clamp(64px,12vw,180px); position:relative; display:inline-grid; grid-auto-flow:column; gap:.06em}
+    .title span{display:inline-block; transform:translateY(24px) scale(.98); opacity:0; filter: drop-shadow(0 16px 48px rgba(0,0,0,.7));
+      background:linear-gradient(180deg, #fff, #dcdcdc 40%, #fff 80%); -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow:0 1px 0 rgba(255,255,255,.5), 0 2px 0 rgba(255,255,255,.25);
+      animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards;
+    }
+    .title span:nth-child(1){animation-delay:.05s}
+    .title span:nth-child(2){animation-delay:.14s}
+    .title span:nth-child(3){animation-delay:.23s}
+    @keyframes rise{to{transform:translateY(0) scale(1); opacity:1}}
 
     .tag{margin:14px 0 26px; color:#dcdcdc; letter-spacing:.14em; text-transform:uppercase; font-size:12px; opacity:.9}
 
-    /* Buttons (monochrome, classy, with border shimmer) */
+    /* Buttons (monochrome, classy, glossy sweep on hover) */
     .actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}
     .btn{position:relative; border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.02); color:#fff; padding:14px 22px; border-radius:999px; font-weight:800; letter-spacing:.04em; cursor:pointer; text-decoration:none; transition:transform .16s ease, background .16s ease, border-color .16s ease}
     .btn:hover{transform:translateY(-2px); background:rgba(255,255,255,.08); border-color:#fff}
-    .btn::after{content:""; position:absolute; inset:-2px; border-radius:inherit; background:conic-gradient(from 0deg, transparent 10%, rgba(255,255,255,.25), transparent 90%); filter:blur(8px); opacity:.0; transition:opacity .2s ease}
-    .btn:hover::after{opacity:.5}
+    .btn::after{content:""; position:absolute; inset:-2px; border-radius:inherit; background:linear-gradient(110deg, rgba(255,255,255,.5) 0 8%, transparent 35% 100%); filter:blur(10px); opacity:0; transform:translateX(-20%); transition:opacity .25s ease, transform .6s ease}
+    .btn:hover::after{opacity:.6; transform:translateX(5%)}
 
     /* ======= Work Grid ======= */
     section#work{padding:120px 20px 160px; max-width:1200px; margin:0 auto}
@@ -94,18 +64,16 @@
     .fine{opacity:.75; font-size:12px; letter-spacing:.06em; text-transform:uppercase}
 
     /* Respect reduced motion */
-    @media (prefers-reduced-motion:reduce){ .title .amp{animation:none} .layer, .waves, .ink, .rings{animation:none} .grain{animation:none} }
+    @media (prefers-reduced-motion:reduce){ .title span{animation:none; opacity:1; transform:none} }
   </style>
 </head>
 <body>
-  <!-- Background (no grid, no squares) -->
-  <div class="canvas" aria-hidden>
-    <div class="layer waves"></div>
-    <div class="layer ink"></div>
-    <div class="layer rings"></div>
+  <!-- Background: pure velvet (no lines, no lights, no movement) -->
+  <div class="backdrop" aria-hidden>
+    <div class="velvet"></div>
     <div class="grain">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>
+        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>
         <rect width="100" height="100" filter="url(#n)" opacity=".35"/>
       </svg>
     </div>
@@ -124,7 +92,7 @@
   <main class="hero">
     <div>
       <h1 class="title" aria-label="M and E Websites">
-        <span>M</span><span class="amp">&</span><span>E</span>
+        <span>M</span><span>&</span><span>E</span>
       </h1>
       <div class="tag">Web Developers.</div>
       <div class="actions">
@@ -153,13 +121,6 @@
 
   <script>
     document.getElementById('yr').textContent = new Date().getFullYear();
-
-    // Low-CPU parallax on scroll (subtle)
-    const layers = Array.from(document.querySelectorAll('.canvas .layer'));
-    let sy = 0; let ticking = false;
-    addEventListener('scroll', ()=>{ sy = scrollY; if(!ticking){ requestAnimationFrame(()=>{
-      layers.forEach((el, i)=>{ el.style.transform = `translateY(${sy * (0.01 + i*0.015)}px)`; });
-      ticking = false; }); ticking = true; } }, {passive:true});
 
     // Quote trigger placeholder (wire to Formspree later)
     [document.getElementById('openQuote'), document.getElementById('ctaQuote')].forEach(btn=>{
