@@ -12,20 +12,30 @@
     body{margin:0; background:var(--bg); color:var(--fg); font:600 16px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; overflow-x:hidden}
     a{color:inherit; text-decoration:none}
 
-    /* ======= Background Texture (no flashlight) ======= */
+    /* ======= Background Textures (no flashlight) ======= */
     .canvas{position:fixed; inset:0; z-index:-2; pointer-events:none}
-    /* layered conic + linear gradients for a sculpted, 3D-ish texture */
-    .texture{position:absolute; inset:-10vmax; background:
-      repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 20px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 1px, transparent 1px 20px),
-      conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.03), rgba(255,255,255,0) 25%, rgba(255,255,255,.03) 50%, rgba(255,255,255,0) 75%, rgba(255,255,255,.03) 100%);
-      filter: contrast(105%);
-      animation: drift 26s linear infinite;
-    }
-    @keyframes drift{ to{ transform: rotate(1turn) scale(1.02) } }
+
+    /* Layer 1 — diagonal silk stripes, slow pan */
+    .layer.l1{position:absolute; inset:-10vmax; background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 3px, transparent 3px 26px);
+      animation: pan1 38s linear infinite; filter:contrast(104%)}
+    @keyframes pan1{ to{ background-position: 600px 0 } }
+
+    /* Layer 2 — micro grid, subtle zoom */
+    .layer.l2{position:absolute; inset:-8vmax; background:
+      linear-gradient(0deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0/ 100% 24px,
+      linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px) 0 0/ 24px 100%;
+      transform-origin:50% 50%; animation: zoom2 24s ease-in-out infinite}
+    @keyframes zoom2{ 50%{ transform: scale(1.04)} }
+
+    /* Layer 3 — conic bands, ultra subtle rotation */
+    .layer.l3{position:absolute; inset:-15vmax; background:
+      conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.04), rgba(255,255,255,0) 25%, rgba(255,255,255,.04) 50%, rgba(255,255,255,0) 75%, rgba(255,255,255,.04) 100%);
+      mix-blend-mode:overlay; filter:blur(6px) contrast(106%); animation: spin3 80s linear infinite}
+    @keyframes spin3{ to{ transform: rotate(1turn) } }
 
     /* animated film grain for bite */
-    .grain{position:absolute; inset:-1px; mix-blend-mode:soft-light; opacity:.28; animation: grainShift 1.8s steps(4) infinite }
+    .grain{position:absolute; inset:-1px; mix-blend-mode:soft-light; opacity:.24; animation: grainShift 1.6s steps(4) infinite }
     @keyframes grainShift{ 50%{ transform: translate3d(1px,-1px,0)} to{ transform: translate3d(0,0,0)} }
     .grain svg{width:100%; height:100%; display:block}
 
@@ -39,15 +49,13 @@
     /* ======= Hero ======= */
     .hero{min-height:100svh; display:grid; place-items:center; padding:120px 20px 80px; text-align:center}
 
-    /* stacked 3D wordmark without cursor light */
+    /* stacked 3D wordmark */
     .title{margin:8px 0 0; font-weight:1000; line-height:.85; letter-spacing:-.02em; font-size:clamp(56px,12vw,180px); position:relative; display:inline-block}
-    /* multi-layer text-shadow to create an embossed/extruded look */
     .title span{position:relative; display:inline-block; text-shadow:
         0 1px 0 rgba(255,255,255,.5),
         0 2px 0 rgba(255,255,255,.35),
         0 3px 0 rgba(255,255,255,.18),
         0 8px 22px rgba(0,0,0,.7)}
-    /* subtle idle breathing */
     .title .amp{animation: breathe 6s ease-in-out infinite}
     @keyframes breathe{ 50%{ transform: translateY(-4px) scale(1.02) } }
 
@@ -75,13 +83,15 @@
     .fine{opacity:.75; font-size:12px; letter-spacing:.06em; text-transform:uppercase}
 
     /* Respect reduced motion */
-    @media (prefers-reduced-motion:reduce){ .title .amp{animation:none} .texture{animation:none} .grain{animation:none} }
+    @media (prefers-reduced-motion:reduce){ .title .amp{animation:none} .layer.l1,.layer.l2,.layer.l3{animation:none} .grain{animation:none} }
   </style>
 </head>
 <body>
   <!-- Background (no cursor light) -->
   <div class="canvas" aria-hidden>
-    <div class="texture"></div>
+    <div class="layer l1"></div>
+    <div class="layer l2"></div>
+    <div class="layer l3"></div>
     <div class="grain">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none">
         <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>
@@ -105,7 +115,7 @@
       <h1 class="title" aria-label="M and E Websites">
         <span>M</span><span class="amp">&</span><span>E</span>
       </h1>
-      <div class="tag">Black & White • Brutal polish</div>
+      <div class="tag">Web Developers.</div>
       <div class="actions">
         <a class="btn" href="#" id="ctaQuote">Get quote</a>
         <a class="btn" href="#work">View our creations</a>
@@ -130,15 +140,28 @@
     <div class="fine">© <span id="yr"></span> M&E — Minimal words. Maximum craft.</div>
   </footer>
 
-  <!-- Quote trigger (wire later) -->
   <script>
     document.getElementById('yr').textContent = new Date().getFullYear();
 
-    const quoteButtons = [document.getElementById('openQuote'), document.getElementById('ctaQuote')].filter(Boolean);
-    quoteButtons.forEach(btn => btn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      alert('Paste your Formspree endpoint and I\'ll wire a slick modal.');
-    }));
+    // Subtle parallax on scroll for background layers (no flashlight, low CPU)
+    const l1 = document.querySelector('.layer.l1');
+    const l2 = document.querySelector('.layer.l2');
+    const l3 = document.querySelector('.layer.l3');
+    let sy = 0; let ticking = false;
+    window.addEventListener('scroll', ()=>{ sy = window.scrollY; if(!ticking){ requestAnimationFrame(()=>{ 
+      const y1 = sy * 0.02; // furthest
+      const y2 = sy * 0.04; // middle
+      const y3 = sy * 0.06; // closest
+      l1.style.transform = `translateY(${y1}px)`;
+      l2.style.transform = `translateY(${y2}px)`;
+      l3.style.transform = `translateY(${y3}px)`;
+      ticking = false; }); ticking = true; }
+    }, {passive:true});
+
+    // Quote trigger placeholder (wire to Formspree later)
+    [document.getElementById('openQuote'), document.getElementById('ctaQuote')].forEach(btn=>{
+      if(!btn) return; btn.addEventListener('click', (e)=>{ e.preventDefault(); alert('Paste your Formspree endpoint and I\'ll wire a slick modal.'); });
+    });
   </script>
 </body>
 </html>
