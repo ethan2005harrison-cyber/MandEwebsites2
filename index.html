@@ -6,29 +6,25 @@
   <title>M&E Websites — Monochrome Studio</title>
   <meta name="description" content="Black & white. Fewer words. Obscene polish. M&E Websites." />
   <style>
-    :root{ --bg:#000; --fg:#fff; --muted:#bfbfbf; --radius:22px; --grain:.10 }
+    :root{ --bg:#000; --fg:#fff; --muted:#bfbfbf; --radius:22px; --grain:.08 }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0; background:var(--bg); color:var(--fg); font:600 16px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; overflow-x:hidden}
     a{color:inherit; text-decoration:none}
 
-    /* ======= Background: "Porcelain" (soft organic shapes, no lines/ribbons/lights) ======= */
-    .porcelain{position:fixed; inset:0; z-index:-2; pointer-events:none; filter:contrast(105%)}
-    .porcelain::before{content:""; position:absolute; inset:-10vmax; background:
-      radial-gradient(40vmax 30vmax at 18% 30%, rgba(255,255,255,.05), transparent 60%),
-      radial-gradient(30vmax 24vmax at 78% 28%, rgba(255,255,255,.035), transparent 62%),
-      radial-gradient(36vmax 28vmax at 60% 74%, rgba(255,255,255,.045), transparent 65%),
-      radial-gradient(26vmax 20vmax at 12% 80%, rgba(255,255,255,.03), transparent 70%);
-      animation: porcelainDrift 90s ease-in-out infinite;
-    }
-    @keyframes porcelainDrift{
-      0%,100%{ transform: translate3d(0,0,0) scale(1) }
-      50%{ transform: translate3d(0,-1.2%,0) scale(1.02) }
-    }
-
-    /* fine grain for depth */
+    /* ======= Background: Monochrome MARBLE (elegant, static) ======= */
+    .marble{position:fixed; inset:0; z-index:-2; pointer-events:none}
+    .marble svg{position:absolute; inset:0; width:100%; height:100%; display:block}
+    .vignette{position:absolute; inset:0; pointer-events:none; background:
+      radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.05), transparent 55%),
+      radial-gradient(1400px 900px at 50% 70%, rgba(255,255,255,.03), transparent 60%);
+      filter: blur(20px); opacity:.25}
     .grain{position:fixed; inset:-1px; mix-blend-mode:soft-light; opacity:var(--grain)}
     .grain svg{width:100%; height:100%; display:block}
+
+    /* ======= Page blur-in reveal ======= */
+    .page{filter: blur(16px); opacity:0; transform: translateY(6px); transition: filter .7s cubic-bezier(.2,.7,.2,1), opacity .6s ease, transform .6s ease}
+    .page.ready{filter: blur(0); opacity:1; transform: translateY(0)}
 
     /* ======= Header ======= */
     header{position:fixed; inset:18px 18px auto; z-index:3; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.02); backdrop-filter: blur(6px) saturate(120%); border:1px solid rgba(255,255,255,.08)}
@@ -71,18 +67,36 @@
     footer{padding:80px 20px 120px; display:grid; place-items:center; color:#aaa}
     .fine{opacity:.75; font-size:12px; letter-spacing:.06em; text-transform:uppercase}
 
-    /* Reduced motion */
-    @media (prefers-reduced-motion:reduce){ .porcelain::before{animation:none} .title span{animation:none; opacity:1; transform:none} }
-      /* ======= Page blur-in reveal ======= */
-    .page{filter: blur(16px); opacity:0; transform: translateY(6px); transition: filter .7s cubic-bezier(.2,.7,.2,1), opacity .6s ease, transform .6s ease}
-    .page.ready{filter: blur(0); opacity:1; transform: translateY(0)}
-
-    @media (prefers-reduced-motion:reduce){ .page{filter:none; opacity:1; transform:none; transition:none} }
+    /* Accessibility */
+    @media (prefers-reduced-motion:reduce){ .page{filter:none; opacity:1; transform:none; transition:none} .title span{animation:none; opacity:1; transform:none} }
   </style>
 </head>
 <body>
-  <!-- Background: Porcelain -->
-  <div class="porcelain" aria-hidden></div>
+  <!-- Background: MARBLE (static) -->
+  <div class="marble" aria-hidden>
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+      <!-- Generate subtle marble veins via turbulence + threshold -->
+      <defs>
+        <filter id="marbleFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.005" numOctaves="3" seed="8" result="noise"/>
+          <feColorMatrix in="noise" type="matrix" values="
+            1 0 0 0 0,
+            0 1 0 0 0,
+            0 0 1 0 0,
+            0 0 0 12 -6" result="contrast"/>
+          <feGaussianBlur in="contrast" stdDeviation="0.6" result="blur"/>
+        </filter>
+        <linearGradient id="tone" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(255,255,255,0.045)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="100" height="100" fill="url(#tone)"/>
+      <rect x="0" y="0" width="100" height="100" filter="url(#marbleFilter)" fill="rgba(255,255,255,0.06)" opacity="0.6"/>
+    </svg>
+    <div class="vignette" aria-hidden></div>
+  </div>
+
   <div class="grain" aria-hidden>
     <svg viewBox="0 0 100 100" preserveAspectRatio="none">
       <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>
@@ -90,52 +104,61 @@
     </svg>
   </div>
 
-  <!-- Header -->
-  <header>
-    <div class="brand"><span class="bead"></span> M & E Websites</div>
-    <nav>
-      <a href="#work">Our creations</a>
-      <a href="#" id="openQuote">Get quote</a>
-    </nav>
-  </header>
+  <!-- Page wrapper for blur-in reveal -->
+  <div class="page" id="page">
+    <!-- Header -->
+    <header>
+      <div class="brand"><span class="bead"></span> M & E Websites</div>
+      <nav>
+        <a href="#work">Our creations</a>
+        <a href="#" id="openQuote">Get quote</a>
+      </nav>
+    </header>
 
-  <!-- Hero -->
-  <main class="hero">
-    <div>
-      <h1 class="title" aria-label="M and E Websites">
-        <span>M</span><span>&</span><span>E</span>
-      </h1>
-      <div class="tag">Web Developers.</div>
-      <div class="actions">
-        <a class="btn" href="#" id="ctaQuote">Get quote</a>
-        <a class="btn" href="#work">View our creations</a>
+    <!-- Hero -->
+    <main class="hero">
+      <div>
+        <h1 class="title" aria-label="M and E Websites">
+          <span>M</span><span>&</span><span>E</span>
+        </h1>
+        <div class="tag">Web Developers.</div>
+        <div class="actions">
+          <a class="btn" href="#" id="ctaQuote">Get quote</a>
+          <a class="btn" href="#work">View our creations</a>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <!-- Work (swap with your real builds) -->
-  <section id="work" aria-label="Selected builds">
-    <div class="grid">
-      <article class="card"><h3>01 — Commerce</h3></article>
-      <article class="card"><h3>02 — Portfolio</h3></article>
-      <article class="card"><h3>03 — Services</h3></article>
-      <article class="card"><h3>04 — Architecture</h3></article>
-      <article class="card"><h3>05 — Event</h3></article>
-      <article class="card"><h3>06 — Restaurant</h3></article>
-    </div>
-  </section>
+    <!-- Work (swap with your real builds) -->
+    <section id="work" aria-label="Selected builds">
+      <div class="grid">
+        <article class="card"><h3>01 — Commerce</h3></article>
+        <article class="card"><h3>02 — Portfolio</h3></article>
+        <article class="card"><h3>03 — Services</h3></article>
+        <article class="card"><h3>04 — Architecture</h3></article>
+        <article class="card"><h3>05 — Event</h3></article>
+        <article class="card"><h3>06 — Restaurant</h3></article>
+      </div>
+    </section>
 
-  <footer>
-    <div class="fine">© <span id="yr"></span> M&E — Minimal words. Maximum craft.</div>
-  </footer>
+    <footer>
+      <div class="fine">© <span id="yr"></span> M&E — Minimal words. Maximum craft.</div>
+    </footer>
+  </div>
 
   <script>
+    // Year
     document.getElementById('yr').textContent = new Date().getFullYear();
 
     // Quote trigger placeholder (wire to Formspree later)
     [document.getElementById('openQuote'), document.getElementById('ctaQuote')].forEach(btn=>{
       if(!btn) return; btn.addEventListener('click', (e)=>{ e.preventDefault(); alert('Paste your Formspree endpoint and I\'ll wire a sleek modal.'); });
     });
+
+    // Blur-in page reveal
+    const page = document.getElementById('page');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!prefersReduced){ requestAnimationFrame(()=>{ page.classList.add('ready'); }); } else { page.classList.add('ready'); }
   </script>
 </body>
 </html>
