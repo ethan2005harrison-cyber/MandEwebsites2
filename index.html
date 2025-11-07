@@ -6,19 +6,26 @@
   <title>M&E Websites — Monochrome Studio</title>
   <meta name="description" content="Black & white. Fewer words. Obscene polish. M&E Websites." />
   <style>
-    :root{ --bg:#000; --fg:#fff; --muted:#bfbfbf; --radius:22px; --grain:.08 }
+    :root{ --bg:#000; --fg:#fff; --muted:#bfbfbf; --radius:22px; --grain:.06 }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0; background:var(--bg); color:var(--fg); font:600 16px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; overflow-x:hidden}
     a{color:inherit; text-decoration:none}
 
-    /* ======= Background: Monochrome MARBLE (elegant, static) ======= */
-    .marble{position:fixed; inset:0; z-index:-2; pointer-events:none}
-    .marble svg{position:absolute; inset:0; width:100%; height:100%; display:block}
+    /* ======= Background: Brushed Metal (pure monochrome, static) ======= */
+    .brushed{position:fixed; inset:0; z-index:-2; pointer-events:none; background:#000}
+    .brushed::before{content:""; position:absolute; inset:0; background:
+      /* vertical burnish */
+      repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, rgba(255,255,255,0) 1px 4px),
+      /* soft cross sheen */
+      linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      filter: blur(0.4px) contrast(105%);
+      opacity:.5;
+    }
     .vignette{position:absolute; inset:0; pointer-events:none; background:
-      radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.05), transparent 55%),
-      radial-gradient(1400px 900px at 50% 70%, rgba(255,255,255,.03), transparent 60%);
-      filter: blur(20px); opacity:.25}
+      radial-gradient(1200px 800px at 50% 45%, rgba(255,255,255,.05), transparent 55%),
+      radial-gradient(1400px 900px at 50% 75%, rgba(255,255,255,.03), transparent 60%);
+      filter: blur(18px); opacity:.22}
     .grain{position:fixed; inset:-1px; mix-blend-mode:soft-light; opacity:var(--grain)}
     .grain svg{width:100%; height:100%; display:block}
 
@@ -72,31 +79,10 @@
   </style>
 </head>
 <body>
-  <!-- Background: MARBLE (static) -->
-  <div class="marble" aria-hidden>
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-      <!-- Generate subtle marble veins via turbulence + threshold -->
-      <defs>
-        <filter id="marbleFilter">
-          <feTurbulence type="fractalNoise" baseFrequency="0.005" numOctaves="3" seed="8" result="noise"/>
-          <feColorMatrix in="noise" type="matrix" values="
-            1 0 0 0 0,
-            0 1 0 0 0,
-            0 0 1 0 0,
-            0 0 0 12 -6" result="contrast"/>
-          <feGaussianBlur in="contrast" stdDeviation="0.6" result="blur"/>
-        </filter>
-        <linearGradient id="tone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.045)"/>
-          <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="100" height="100" fill="url(#tone)"/>
-      <rect x="0" y="0" width="100" height="100" filter="url(#marbleFilter)" fill="rgba(255,255,255,0.06)" opacity="0.6"/>
-    </svg>
+  <!-- Background: Brushed Metal (static) -->
+  <div class="brushed" aria-hidden>
     <div class="vignette" aria-hidden></div>
   </div>
-
   <div class="grain" aria-hidden>
     <svg viewBox="0 0 100 100" preserveAspectRatio="none">
       <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>
