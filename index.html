@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>M&E Websites — Black & White Studio</title>
+  <meta name="description" content="M&E Websites — We design and build standout sites. Minimal words. Maximum craft." />
+  <style>
+    /* --------------------
+       Root + Reset
+    ---------------------*/
+    :root{
+      --bg:#0a0a0a;         /* deep black */
+      --fg:#ffffff;         /* pure white */
+      --muted:#bdbdbd;      /* cool gray */
+      --line:#1a1a1a;
+      --accent:#ffffff;
+      --radius:18px;
+      --shadow: 0 12px 40px rgba(255,255,255,0.05), 0 2px 6px rgba(255,255,255,0.08) inset, 0 0 0 1px rgba(255,255,255,0.06) inset;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--fg); font:500 16px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      overflow-x:hidden;
+    }
+
+    /* --------------------
+       Layered Background
+       (depthy texture + parallax)
+    ---------------------*/
+    .stage{position:fixed; inset:0; z-index:-1; overflow:hidden;}
+
+    /* 1) Subtle diagonal fiber texture */
+    .texture{
+      position:absolute; inset:-20vmax; /* bleed for parallax */
+      background:
+        /* micro grid */
+        linear-gradient(0deg, rgba(255,255,255,0.03) 1px, transparent 1px) 0 0/ 100% 24px,
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px) 0 0/ 24px 100%,
+        /* fiber */
+        repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 2px, rgba(255,255,255,0.01) 2px 4px);
+      filter: contrast(102%) brightness(100%);
+      transform: translate3d(0,0,0);
+      will-change: transform;
+    }
+
+    /* 2) Animated light sweep to make it "pop" */
+    .light{
+      position:absolute; inset:-10% -30%;
+      background: radial-gradient(1500px 600px at var(--mx,50%) var(--my,40%), rgba(255,255,255,0.08), rgba(255,255,255,0.02) 50%, transparent 70%);
+      mix-blend-mode: screen; opacity:.8;
+      filter: blur(20px) saturate(110%);
+      will-change: transform, background-position;
+      pointer-events:none;
+      transition: background-position .2s ease-out;
+    }
+
+    /* 3) Film grain via SVG turbulence */
+    .grain{position:absolute; inset:-1px; mix-blend-mode:soft-light; opacity:.35; filter:contrast(120%)}
+    .grain svg{width:100%; height:100%; display:block}
+
+    /* 4) Depth rings */
+    .rings{
+      position:absolute; inset:-20vmax; pointer-events:none;
+      background:
+        radial-gradient(60vmax 60vmax at 70% 40%, rgba(255,255,255,0.04), transparent 40%),
+        radial-gradient(40vmax 40vmax at 10% 60%, rgba(255,255,255,0.06), transparent 50%),
+        radial-gradient(30vmax 30vmax at 90% 80%, rgba(255,255,255,0.03), transparent 60%);
+      filter: blur(10px);
+    }
+
+    /* --------------------
+       Header
+    ---------------------*/
+    header{
+      position:fixed; inset:20px 20px auto; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 16px; border-radius:999px; background:rgba(255,255,255,0.02); backdrop-filter: blur(6px) saturate(120%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 40px rgba(0,0,0,0.4);
+    }
+    .logo{
+      letter-spacing: .06em; font-weight:800; display:flex; align-items:center; gap:10px;
+    }
+    .dot{width:10px; height:10px; border-radius:50%; background:var(--fg); box-shadow:0 0 12px rgba(255,255,255,.6), 0 0 64px rgba(255,255,255,.25)}
+    nav a{
+      color:var(--fg); text-decoration:none; opacity:.8; padding:8px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.09);
+      transition:all .25s ease; font-size:14px;
+    }
+    nav a:hover{opacity:1; transform:translateY(-1px); background:rgba(255,255,255,.03)}
+
+    /* --------------------
+       Hero
+    ---------------------*/
+    .hero{
+      min-height:100svh; display:grid; place-items:center; text-align:center; padding:120px 20px 80px;
+    }
+    .tag{display:inline-flex; gap:10px; align-items:center; padding:8px 12px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.03); backdrop-filter: blur(4px);
+      font-size:12px; letter-spacing:.12em; text-transform:uppercase; opacity:.9}
+
+    .title{margin:28px 0 18px; font-size: clamp(42px, 9vw, 110px); line-height:.9; font-weight:900; letter-spacing:-.02em;
+      background: linear-gradient(180deg, #fff 0%, #dcdcdc 35%, #fff 70%); -webkit-background-clip:text; background-clip:text; color:transparent;
+      filter: drop-shadow(0 10px 30px rgba(255,255,255,.05));
+    }
+    .title .amp{display:inline-block; transform: translateZ(0); animation: ampFloat 6s ease-in-out infinite}
+    @keyframes ampFloat{50%{transform:translateY(-6px) rotate(2deg)}}
+
+    .sub{max-width: 780px; margin:0 auto 34px; font-size: clamp(16px, 2.2vw, 22px); color:var(--muted)}
+
+    .btns{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}
+    .btn{
+      position:relative; appearance:none; border:0; padding:16px 24px; border-radius:999px; font-weight:700; letter-spacing:.02em; cursor:pointer;
+      color:#0a0a0a; background:#fff; box-shadow: var(--shadow); transform: translateZ(0);
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+      isolation:isolate; overflow:hidden;
+    }
+    .btn:before{content:""; position:absolute; inset:-40% -20%; background:radial-gradient(600px 120px at var(--bx,50%) var(--by,50%), rgba(255,255,255,.7), rgba(255,255,255,0) 40%);
+      mix-blend-mode:overlay; opacity:.6; transition:opacity .15s}
+    .btn:hover{transform: translateY(-2px);}
+    .btn:hover:before{opacity:1}
+    .btn.outline{background: transparent; color:#fff; border:1px solid rgba(255,255,255,.16)}
+    .btn.outline:hover{background:rgba(255,255,255,.06)}
+
+    /* Magnetic button container to amplify hover */
+    .mag{display:inline-block}
+
+    /* --------------------
+       Work strip (marquee)
+    ---------------------*/
+    .marqueeWrap{position:relative; margin:80px 0 0; overflow:hidden; mask-image:linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent)}
+    .marquee{display:flex; gap:24px; white-space:nowrap; will-change: transform; animation: scroll 30s linear infinite}
+    @keyframes scroll{ to { transform: translateX(-50%) }}
+    .chip{display:inline-flex; gap:10px; align-items:center; padding:14px 18px; border-radius:999px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); font-weight:600}
+    .dotTiny{width:6px; height:6px; border-radius:50%; background:#fff; opacity:.7}
+
+    /* --------------------
+       Gallery section
+    ---------------------*/
+    section#work{padding:120px 20px; max-width:1200px; margin:0 auto}
+    .sectionTitle{font-size: clamp(22px, 3vw, 34px); letter-spacing:.06em; text-transform:uppercase; color:#e7e7e7; opacity:.9}
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; margin-top:28px}
+    .card{
+      grid-column: span 4; min-height: 260px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08);
+      border-radius: 22px; position:relative; overflow:hidden; box-shadow: 0 10px 40px rgba(0,0,0,.55);
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .card:hover{transform: translateY(-6px); border-color: rgba(255,255,255,.22)}
+    .card:after{content:""; position:absolute; inset:0; background:
+        linear-gradient(120deg, rgba(255,255,255,.20) 0 10%, transparent 40% 60%, rgba(255,255,255,.20) 90% 100%);
+      mix-blend-mode:overlay; opacity:.25; transform: translateX(-30%); transition: transform .8s ease}
+    .card:hover:after{transform: translateX(0%)}
+    .card h3{position:absolute; left:16px; bottom:14px; right:16px; margin:0; font-size:18px; letter-spacing:.02em}
+    .card .hint{position:absolute; top:12px; right:12px; font-size:12px; opacity:.75}
+
+    @media (max-width: 980px){ .card{grid-column: span 6} }
+    @media (max-width: 640px){ .card{grid-column: span 12} }
+
+    /* --------------------
+       Footer
+    ---------------------*/
+    footer{padding:80px 20px 120px; display:grid; place-items:center; color:var(--muted)}
+    .fine{opacity:.7; font-size:13px}
+
+    /* --------------------
+       Modal (Get Quote)
+    ---------------------*/
+    .backdrop{position: fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.6); backdrop-filter: blur(3px);}
+    .backdrop.open{display:grid; animation: fadeIn .15s ease}
+    @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+
+    .modal{width:min(680px, calc(100vw - 32px)); background:#0e0e0e; border:1px solid rgba(255,255,255,.12); border-radius:24px; overflow:hidden; box-shadow:0 20px 80px rgba(0,0,0,.7)}
+    .modalHead{display:flex; justify-content:space-between; align-items:center; padding:18px 18px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.08)}
+    .modalHead h2{margin:0; font-size:18px; letter-spacing:.06em; text-transform:uppercase}
+    .close{appearance:none; border:0; background:transparent; color:#fff; font-size:22px; cursor:pointer; opacity:.7}
+    .close:hover{opacity:1}
+    form{padding:18px; display:grid; gap:14px}
+    label{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#e7e7e7}
+    input, textarea{
+      width:100%; padding:14px 14px; border-radius:14px; background:#0a0a0a; color:#fff;
+      border:1px solid rgba(255,255,255,.12); outline:none; transition:border-color .18s ease, transform .12s ease;
+    }
+    input:focus, textarea:focus{border-color:#fff; transform: translateY(-1px)}
+    textarea{min-height:120px; resize:vertical}
+
+    .formRow{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width:640px){ .formRow{grid-template-columns:1fr} }
+
+    .submit{justify-self:end}
+
+    /* Custom validation pop */
+    .pop{position:fixed; inset:auto 20px 20px auto; background:#111; color:#fff; border:1px solid rgba(255,255,255,.16); border-radius:16px; padding:12px 16px; display:none; box-shadow: 0 10px 40px rgba(0,0,0,.5)}
+    .pop.show{display:block; animation: slideUp .18s ease}
+    @keyframes slideUp{from{transform: translateY(4px); opacity:0} to{transform: translateY(0); opacity:1}}
+
+    /* Accessibility: respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .marquee{animation:none}
+      .title .amp{animation:none}
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Layers -->
+  <div class="stage" aria-hidden>
+    <div class="texture" id="tex"></div>
+    <div class="rings"></div>
+    <div class="light" id="light"></div>
+    <div class="grain">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <filter id="noiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+          <feComponentTransfer>
+            <feFuncA type="table" tableValues="0 0.7" />
+          </feComponentTransfer>
+        </filter>
+        <rect width="100" height="100" filter="url(#noiseFilter)" opacity="0.35"></rect>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo"><span class="dot"></span> M<span style="opacity:.6">&</span>E Websites</div>
+    <nav>
+      <a href="#work">Our creations</a>
+      <a href="#" id="openQuote">Get a quote</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <main class="hero">
+    <div>
+      <span class="tag"><span class="dotTiny"></span> Black & White — Maximum Craft</span>
+      <h1 class="title" aria-label="M and E Websites">
+        M<span class="amp">&</span>E Websites
+      </h1>
+      <p class="sub">We make brutally clean, high‑performance websites. Minimal words. Obscene polish.</p>
+      <div class="btns">
+        <span class="mag"><button class="btn" id="ctaQuote">Get a quote</button></span>
+        <span class="mag"><a class="btn outline" href="#work" role="button">View our creations</a></span>
+      </div>
+
+      <!-- Subtle marquee of signals -->
+      <div class="marqueeWrap" aria-hidden>
+        <div class="marquee" id="mq">
+          <div class="track" style="display:flex; gap:24px; padding:16px 0">
+            <span class="chip"><span class="dotTiny"></span> Lightning‑fast loads</span>
+            <span class="chip"><span class="dotTiny"></span> Pixel‑perfect craft</span>
+            <span class="chip"><span class="dotTiny"></span> SEO‑ready</span>
+            <span class="chip"><span class="dotTiny"></span> Responsive by default</span>
+            <span class="chip"><span class="dotTiny"></span> Accessibility‑minded</span>
+            <span class="chip"><span class="dotTiny"></span> Sub‑10KB above‑the‑fold CSS</span>
+            <!-- duplicate for seamless loop -->
+            <span class="chip"><span class="dotTiny"></span> Lightning‑fast loads</span>
+            <span class="chip"><span class="dotTiny"></span> Pixel‑perfect craft</span>
+            <span class="chip"><span class="dotTiny"></span> SEO‑ready</span>
+            <span class="chip"><span class="dotTiny"></span> Responsive by default</span>
+            <span class="chip"><span class="dotTiny"></span> Accessibility‑minded</span>
+            <span class="chip"><span class="dotTiny"></span> Sub‑10KB above‑the‑fold CSS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Work Grid (placeholders) -->
+  <section id="work" aria-label="Selected projects">
+    <div class="sectionTitle">Selected builds</div>
+    <div class="grid">
+      <article class="card"><span class="hint">— 01</span><h3>Monochrome Commerce</h3></article>
+      <article class="card"><span class="hint">— 02</span><h3>Art‑House Portfolio</h3></article>
+      <article class="card"><span class="hint">— 03</span><h3>Premium Services</h3></article>
+      <article class="card"><span class="hint">— 04</span><h3>Architect Studio</h3></article>
+      <article class="card"><span class="hint">— 05</span><h3>Event Landing</h3></article>
+      <article class="card"><span class="hint">— 06</span><h3>Restaurant Menu</h3></article>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="fine">© <span id="yr"></span> M&E Websites. Built with ridiculous attention.</div>
+  </footer>
+
+  <!-- Quote Modal -->
+  <div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-labelledby="qtitle">
+    <div class="modal">
+      <div class="modalHead">
+        <h2 id="qtitle">Start a project</h2>
+        <button class="close" id="close">×</button>
+      </div>
+      <form id="quoteForm" novalidate>
+        <div class="formRow">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" name="name" placeholder="Your name" required />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required />
+          </div>
+        </div>
+        <div>
+          <label for="msg">Project outline</label>
+          <textarea id="msg" name="message" placeholder="Tell us what you need…" required></textarea>
+        </div>
+        <div class="submit">
+          <button class="btn" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom validation popup -->
+  <div class="pop" id="pop" role="status" aria-live="assertive"></div>
+
+  <script>
+    // Utility shorthands
+    const $ = (sel, el=document) => el.querySelector(sel);
+
+    // Dynamic year
+    $('#yr').textContent = new Date().getFullYear();
+
+    // Parallax: texture + light follow mouse
+    const tex = $('#tex');
+    const light = $('#light');
+    let mx = 0, my = 0; // mouse percents
+    window.addEventListener('pointermove', (e)=>{
+      const { innerWidth:w, innerHeight:h } = window;
+      mx = e.clientX / w; my = e.clientY / h;
+      // parallax translate
+      const tx = (mx - .5) * 40;  // px
+      const ty = (my - .5) * 40;
+      tex.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+      light.style.setProperty('--mx', `${Math.round(mx*100)}%`);
+      light.style.setProperty('--my', `${Math.round(my*100)}%`);
+    });
+
+    // Magnetic buttons (slight attract on hover)
+    document.querySelectorAll('.mag .btn').forEach(btn=>{
+      const r = 36; // radius of effect
+      btn.addEventListener('mousemove', (e)=>{
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+        const dx = (x - rect.width/2) / r;
+        const dy = (y - rect.height/2) / r;
+        btn.style.transform = `translate(${dx}px, ${dy}px)`;
+        btn.style.setProperty('--bx', x+'px');
+        btn.style.setProperty('--by', y+'px');
+      });
+      btn.addEventListener('mouseleave', ()=>{ btn.style.transform = 'translate(0,0)'; });
+    });
+
+    // Quote modal open/close
+    const backdrop = $('#backdrop');
+    const openers = ['#openQuote', '#ctaQuote'].map(sel => $(sel));
+    const close = $('#close');
+    openers.forEach(el => el && el.addEventListener('click', (e)=>{ e.preventDefault(); backdrop.classList.add('open'); $('#name').focus(); }));
+    close.addEventListener('click', ()=> backdrop.classList.remove('open'));
+    backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) backdrop.classList.remove('open'); });
+
+    // Custom validation pop
+    const pop = $('#pop');
+    function showPop(msg){
+      pop.textContent = msg; pop.classList.add('show');
+      clearTimeout(pop._t); pop._t = setTimeout(()=> pop.classList.remove('show'), 2200);
+    }
+
+    // Basic form validation + demo submit
+    $('#quoteForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const name = $('#name').value.trim();
+      const email = $('#email').value.trim();
+      const msg = $('#msg').value.trim();
+
+      if(!name){ showPop('Please enter your name.'); return; }
+      if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showPop('Add a valid email so we can reply.'); return; }
+      if(!msg){ showPop('Tell us a little about the project.'); return; }
+
+      // Demo success state — replace with your endpoint (Formspree, etc.)
+      showPop('Thanks! We\'ll get back to you shortly.');
+      setTimeout(()=>{ backdrop.classList.remove('open'); $('#quoteForm').reset(); }, 600);
+    });
+
+    // Duplicate marquee track for seamless 50% translate
+    const mq = $('#mq');
+    const clone = mq.firstElementChild.cloneNode(true); mq.appendChild(clone);
+  </script>
+</body>
+</html>
